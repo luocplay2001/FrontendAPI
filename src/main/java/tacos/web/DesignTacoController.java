@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 
 import lombok.extern.slf4j.Slf4j;
@@ -53,6 +54,24 @@ public class DesignTacoController {
 				ingrList.add(ingredient);
 		}
 		return ingrList;
+	}
+	
+	@PostMapping
+	public String processDesign(@RequestParam("ingredients") String
+			ingredientIds, @RequestParam("name") String name) {
+		List<Ingredient> ingredients = new ArrayList<Ingredient>();
+		for (String ingredientId : ingredientIds.split(",")) {
+			Ingredient ingredient = rest.getForObject
+				("http://localhost:8080/ ingredients/{id}"
+						,Ingredient.class, ingredientId);
+			ingredients.add(ingredient);
+		}
+		Taco taco = new Taco();
+		taco.setName(name);
+		taco.setIngredients(ingredients);
+		System.out.println(taco);
+		rest.postForObject("http://localhost:8080/design", taco, Taco.class);
+		return "redirect:/orders/current";
 	}
 }
 
